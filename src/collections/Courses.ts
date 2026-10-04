@@ -65,6 +65,11 @@ export const Courses: CollectionConfig = {
               type: 'upload',
               relationTo: 'media',
               label: 'Capa do Curso',
+              filterOptions: {
+                'folder.name': {
+                  equals: 'Capas dos Cursos',
+                },
+              },
               admin: {
                 description:
                   'Não existe limite de imagem para você enviar, mas recomendamos que envie no máximo arquivos de 2MB',

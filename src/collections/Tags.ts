@@ -32,6 +32,11 @@ export const Tags: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       label: 'Ícone',
+      filterOptions: {
+        'folder.name': {
+          equals: 'Categorias',
+        },
+      },
     },
     {
       name: 'sort',

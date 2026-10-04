@@ -1,5 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { en } from '@payloadcms/translations/languages/en'
+import { pt } from '@payloadcms/translations/languages/pt'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -37,16 +39,53 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
+  i18n: {
+    fallbackLanguage: 'en',
+    supportedLanguages: {
+      en,
+      pt,
+    },
+    translations: {
+      pt: {
+        folders: {
+          browseByFolder: 'Pastas de Mídia',
+        },
+      },
+    },
+  },
+  folders: {
+    browseByFolder: true,
+    collectionOverrides: [
+      ({ collection }) => {
+        collection.labels = {
+          singular: 'Pasta de Mídia',
+          plural: 'Pastas de Mídia',
+        }
+        collection.admin = {
+          ...collection.admin,
+          group: 'Sistema & Mídia',
+        }
+        return collection
+      },
+    ],
+  },
   collections: [
+    // --- 1. Sistema & Mídia ---
     Users,
     Media,
-    Tags,
-    Courses,
-    Instructors,
-    VideoPlayers,
-    Modules,
-    Lessons,
+
+    // --- 2. Cursos & Conteúdo (Ordem personalizada) ---
+    Courses, // 1º Cursos
+    Modules, // 2º Módulos
+    Lessons, // 3º Aulas
+    VideoPlayers, // 4º Players de Vídeo
+    Instructors, // 5º Instrutores
+    Tags, // 6º Categorias
+
+    // --- 3. Configuração Global ---
     Carousels,
+
+    // --- 4. Área do Aluno ---
     CourseReviews,
     LessonComments,
     LessonProgress,
@@ -67,4 +106,32 @@ export default buildConfig({
   }),
   sharp,
   plugins: [],
+  onInit: async (payload) => {
+    const defaultFolders = ['Capas dos Cursos', 'Instrutores', 'Categorias', 'Geral']
+
+    for (const name of defaultFolders) {
+      try {
+        const existing = await payload.find({
+          collection: 'payload-folders',
+          where: {
+            name: {
+              equals: name,
+            },
+          },
+        })
+
+        if (existing.totalDocs === 0) {
+          await payload.create({
+            collection: 'payload-folders',
+            data: {
+              name,
+            },
+          })
+          payload.logger.info(`📁 Pasta padrão '${name}' criada com sucesso.`)
+        }
+      } catch (error) {
+        payload.logger.error({ err: error }, `Erro ao criar pasta '${name}'`)
+      }
+    }
+  },
 })

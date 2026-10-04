@@ -23,6 +23,11 @@ export const Instructors: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       label: 'Avatar',
+      filterOptions: {
+        'folder.name': {
+          equals: 'Instrutores',
+        },
+      },
     },
     {
       name: 'bio',
