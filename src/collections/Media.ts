@@ -2,6 +2,14 @@ import type { CollectionConfig } from 'payload'
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  labels: {
+    singular: 'Mídia',
+    plural: 'Mídias',
+  },
+  admin: {
+    group: 'Sistema & Mídia',
+    useAsTitle: 'alt',
+  },
   access: {
     read: () => true,
   },

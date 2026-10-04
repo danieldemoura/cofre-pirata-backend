@@ -69,6 +69,19 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    tags: Tag;
+    courses: Course;
+    instructors: Instructor;
+    video_players: VideoPlayer;
+    modules: Module;
+    lessons: Lesson;
+    carousels: Carousel;
+    course_reviews: CourseReview;
+    lesson_comments: LessonComment;
+    lesson_progress: LessonProgress;
+    favorite_courses: FavoriteCourse;
+    student_notes: StudentNote;
+    support_tickets: SupportTicket;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,17 +91,38 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    tags: TagsSelect<false> | TagsSelect<true>;
+    courses: CoursesSelect<false> | CoursesSelect<true>;
+    instructors: InstructorsSelect<false> | InstructorsSelect<true>;
+    video_players: VideoPlayersSelect<false> | VideoPlayersSelect<true>;
+    modules: ModulesSelect<false> | ModulesSelect<true>;
+    lessons: LessonsSelect<false> | LessonsSelect<true>;
+    carousels: CarouselsSelect<false> | CarouselsSelect<true>;
+    course_reviews: CourseReviewsSelect<false> | CourseReviewsSelect<true>;
+    lesson_comments: LessonCommentsSelect<false> | LessonCommentsSelect<true>;
+    lesson_progress: LessonProgressSelect<false> | LessonProgressSelect<true>;
+    favorite_courses: FavoriteCoursesSelect<false> | FavoriteCoursesSelect<true>;
+    student_notes: StudentNotesSelect<false> | StudentNotesSelect<true>;
+    support_tickets: SupportTicketsSelect<false> | SupportTicketsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    home: Home;
+    menu: Menu;
+    footer: Footer;
+  };
+  globalsSelect: {
+    home: HomeSelect<false> | HomeSelect<true>;
+    menu: MenuSelect<false> | MenuSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -122,7 +156,29 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  first_name?: string | null;
+  last_name?: string | null;
+  is_public_profile?: boolean | null;
+  study_plan_minutes?: number | null;
+  study_plan_days?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  study_plan_included_extras?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -130,6 +186,7 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -147,7 +204,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -163,10 +220,325 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  title: string;
+  /**
+   * Identificador único amigável para URL
+   */
+  slug?: string | null;
+  icon?: (number | null) | Media;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses".
+ */
+export interface Course {
+  id: number;
+  status?: ('público' | 'não_listado' | 'privado') | null;
+  title: string;
+  slug?: string | null;
+  release_year?: string | null;
+  /**
+   * Não existe limite de imagem para você enviar, mas recomendamos que envie no máximo arquivos de 2MB
+   */
+  thumbnail?: (number | null) | Media;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  tags?: (number | Tag)[] | null;
+  instructors?: (number | Instructor)[] | null;
+  modules?: (number | Module)[] | null;
+  parent_course_id?: (number | null) | Course;
+  /**
+   * Cursos que pertencem ao curso pai, que é o curso principal.
+   */
+  sub_courses?: (number | Course)[] | null;
+  /**
+   * Adicione aqui os arquivos de Download, referente ao curso como um todo, e não a aulas especificas
+   */
+  files?: (number | Media)[] | null;
+  /**
+   * Adicione aqui, os links para os arquivos do curso como um todo que estão em outros servidores
+   */
+  resources?:
+    | {
+        nome_do_recurso?: string | null;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instructors".
+ */
+export interface Instructor {
+  id: number;
+  name: string;
+  avatar?: (number | null) | Media;
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "modules".
+ */
+export interface Module {
+  id: number;
+  title: string;
+  /**
+   * Selecione o curso principal ao qual esse módulo pertence
+   */
+  course?: (number | null) | Course;
+  sort?: number | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  lessons?: (number | Lesson)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons".
+ */
+export interface Lesson {
+  id: number;
+  title: string;
+  slug?: string | null;
+  /**
+   * Digite a duração do vídeo, ex: 01:00:00
+   */
+  duration?: string | null;
+  thumbnail?: (number | null) | Media;
+  module?: (number | null) | Module;
+  lesson_instructor?: (number | null) | Instructor;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  players?: (number | VideoPlayer)[] | null;
+  /**
+   * Os arquivos adicionados aqui, ficaram salvos no seu próprio servidor
+   */
+  file?: (number | Media)[] | null;
+  /**
+   * Adicione aqui os links para os arquivos que estão em outros servidores
+   */
+  resource?:
+    | {
+        nome_do_recurso?: string | null;
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video_players".
+ */
+export interface VideoPlayer {
+  id: number;
+  players?:
+    | ('YouTube' | 'Rutube' | 'Dzen' | 'VKVideo' | 'Dailymotion' | 'Odysee' | 'Rumble' | 'OK.ru' | 'Byse' | 'Abyss')
+    | null;
+  url?: string | null;
+  lesson?: (number | null) | Lesson;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carousels".
+ */
+export interface Carousel {
+  id: number;
+  status?: ('published' | 'draft' | 'archived') | null;
+  title: string;
+  courses?: (number | Course)[] | null;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course_reviews".
+ */
+export interface CourseReview {
+  id: number;
+  status?: ('published' | 'draft' | 'archived') | null;
+  course: number | Course;
+  user: number | User;
+  /**
+   * Nota de 1 a 5
+   */
+  rating: number;
+  comment?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lesson_comments".
+ */
+export interface LessonComment {
+  id: number;
+  status?: ('published' | 'draft' | 'archived') | null;
+  lesson: number | Lesson;
+  user: number | User;
+  /**
+   * Se este comentário for uma resposta a outro comentário
+   */
+  parent_id?: (number | null) | LessonComment;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lesson_progress".
+ */
+export interface LessonProgress {
+  id: number;
+  user: number | User;
+  lesson: number | Lesson;
+  completed_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "favorite_courses".
+ */
+export interface FavoriteCourse {
+  id: number;
+  user: number | User;
+  course: number | Course;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "student_notes".
+ */
+export interface StudentNote {
+  id: number;
+  user: number | User;
+  course: number | Course;
+  lesson?: (number | null) | Lesson;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support_tickets".
+ */
+export interface SupportTicket {
+  id: number;
+  status?: ('open' | 'in_progress' | 'resolved') | null;
+  user: number | User;
+  subject: string;
+  message: string;
+  attachments?: (number | Media)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -183,20 +555,72 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'tags';
+        value: number | Tag;
+      } | null)
+    | ({
+        relationTo: 'courses';
+        value: number | Course;
+      } | null)
+    | ({
+        relationTo: 'instructors';
+        value: number | Instructor;
+      } | null)
+    | ({
+        relationTo: 'video_players';
+        value: number | VideoPlayer;
+      } | null)
+    | ({
+        relationTo: 'modules';
+        value: number | Module;
+      } | null)
+    | ({
+        relationTo: 'lessons';
+        value: number | Lesson;
+      } | null)
+    | ({
+        relationTo: 'carousels';
+        value: number | Carousel;
+      } | null)
+    | ({
+        relationTo: 'course_reviews';
+        value: number | CourseReview;
+      } | null)
+    | ({
+        relationTo: 'lesson_comments';
+        value: number | LessonComment;
+      } | null)
+    | ({
+        relationTo: 'lesson_progress';
+        value: number | LessonProgress;
+      } | null)
+    | ({
+        relationTo: 'favorite_courses';
+        value: number | FavoriteCourse;
+      } | null)
+    | ({
+        relationTo: 'student_notes';
+        value: number | StudentNote;
+      } | null)
+    | ({
+        relationTo: 'support_tickets';
+        value: number | SupportTicket;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -206,10 +630,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -229,7 +653,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -240,6 +664,12 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  first_name?: T;
+  last_name?: T;
+  is_public_profile?: T;
+  study_plan_minutes?: T;
+  study_plan_days?: T;
+  study_plan_included_extras?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -247,6 +677,7 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  resetPasswordRequestedAt?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -274,6 +705,189 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  icon?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses_select".
+ */
+export interface CoursesSelect<T extends boolean = true> {
+  status?: T;
+  title?: T;
+  slug?: T;
+  release_year?: T;
+  thumbnail?: T;
+  description?: T;
+  tags?: T;
+  instructors?: T;
+  modules?: T;
+  parent_course_id?: T;
+  sub_courses?: T;
+  files?: T;
+  resources?:
+    | T
+    | {
+        nome_do_recurso?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instructors_select".
+ */
+export interface InstructorsSelect<T extends boolean = true> {
+  name?: T;
+  avatar?: T;
+  bio?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video_players_select".
+ */
+export interface VideoPlayersSelect<T extends boolean = true> {
+  players?: T;
+  url?: T;
+  lesson?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "modules_select".
+ */
+export interface ModulesSelect<T extends boolean = true> {
+  title?: T;
+  course?: T;
+  sort?: T;
+  description?: T;
+  lessons?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons_select".
+ */
+export interface LessonsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  duration?: T;
+  thumbnail?: T;
+  module?: T;
+  lesson_instructor?: T;
+  description?: T;
+  players?: T;
+  file?: T;
+  resource?:
+    | T
+    | {
+        nome_do_recurso?: T;
+        link?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carousels_select".
+ */
+export interface CarouselsSelect<T extends boolean = true> {
+  status?: T;
+  title?: T;
+  courses?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course_reviews_select".
+ */
+export interface CourseReviewsSelect<T extends boolean = true> {
+  status?: T;
+  course?: T;
+  user?: T;
+  rating?: T;
+  comment?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lesson_comments_select".
+ */
+export interface LessonCommentsSelect<T extends boolean = true> {
+  status?: T;
+  lesson?: T;
+  user?: T;
+  parent_id?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lesson_progress_select".
+ */
+export interface LessonProgressSelect<T extends boolean = true> {
+  user?: T;
+  lesson?: T;
+  completed_at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "favorite_courses_select".
+ */
+export interface FavoriteCoursesSelect<T extends boolean = true> {
+  user?: T;
+  course?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "student_notes_select".
+ */
+export interface StudentNotesSelect<T extends boolean = true> {
+  user?: T;
+  course?: T;
+  lesson?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support_tickets_select".
+ */
+export interface SupportTicketsSelect<T extends boolean = true> {
+  status?: T;
+  user?: T;
+  subject?: T;
+  message?: T;
+  attachments?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -314,6 +928,138 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: number;
+  hero_badge?: string | null;
+  hero_course?: (number | null) | Course;
+  hero_tag?: (number | null) | Tag;
+  hero_btn_primary?: string | null;
+  hero_btn_primary_url?: string | null;
+  hero_btn_secundary?: string | null;
+  hero_btn_secundary_url?: string | null;
+  catalog_list?: (number | Tag)[] | null;
+  catalog_categories?: (number | Tag)[] | null;
+  carousels_list?: (number | Carousel)[] | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu".
+ */
+export interface Menu {
+  id: number;
+  logo?: (number | null) | Media;
+  brand_name?: string | null;
+  logo_link?: string | null;
+  items_menu?:
+    | {
+        label: string;
+        /**
+         * Tudo em minúsculo e sem acentos
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer".
+ */
+export interface Footer {
+  id: number;
+  logo?: (number | null) | Media;
+  site_name?: string | null;
+  description?: string | null;
+  columns?:
+    | {
+        /**
+         * Digite o nome da coluna
+         */
+        title?: string | null;
+        links?:
+          | {
+              label?: string | null;
+              url?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home_select".
+ */
+export interface HomeSelect<T extends boolean = true> {
+  hero_badge?: T;
+  hero_course?: T;
+  hero_tag?: T;
+  hero_btn_primary?: T;
+  hero_btn_primary_url?: T;
+  hero_btn_secundary?: T;
+  hero_btn_secundary_url?: T;
+  catalog_list?: T;
+  catalog_categories?: T;
+  carousels_list?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu_select".
+ */
+export interface MenuSelect<T extends boolean = true> {
+  logo?: T;
+  brand_name?: T;
+  logo_link?: T;
+  items_menu?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer_select".
+ */
+export interface FooterSelect<T extends boolean = true> {
+  logo?: T;
+  site_name?: T;
+  description?: T;
+  columns?:
+    | T
+    | {
+        title?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
